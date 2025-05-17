@@ -8,6 +8,7 @@ import { RecentFavorites } from "@/components/recent-favorites"
 import { HymnCard } from "@/components/hymn-card"
 import { HymnDetail } from "@/components/hymn-detail"
 import { filterHymns } from "@/lib/search-utils"
+import { useHymnContext } from "@/lib/hymn-context"
 import type { Hymn } from "@/lib/types"
 
 export default function Home() {
@@ -18,6 +19,17 @@ export default function Home() {
   const [selectedHymn, setSelectedHymn] = useState<Hymn | null>(null)
   const [searchOptions, setSearchOptions] = useState({})
   const [searchQuery, setSearchQuery] = useState("")
+  
+  // Use the shared context
+  const { recentHymns: contextRecentHymns, addToRecent } = useHymnContext()
+  
+  // When we have a selected hymn, we'll immediately add it to recents
+  useEffect(() => {
+    if (selectedHymn) {
+      // Add the hymn to recents immediately
+      addToRecent(selectedHymn)
+    }
+  }, [selectedHymn, addToRecent])
 
   // Load hymns from API
   useEffect(() => {
@@ -49,24 +61,13 @@ export default function Home() {
     setSearchQuery(query)
     setSearchOptions(options)
 
-    // Get recent hymns from localStorage
-    let recentHymns: Hymn[] = []
-    try {
-      const storedRecent = localStorage.getItem("recentHymns")
-      if (storedRecent) {
-        recentHymns = JSON.parse(storedRecent)
-      }
-    } catch (e) {
-      console.error("Error parsing recent hymns:", e)
-    }
-
     // If it looks like the user is searching for a hymn number (e.g. "355" or "355a"),
     // or they explicitly selected the "number" search type, fall back to the existing
     // numeric matcher so we keep its exact-number behaviour.
     const numericPattern = /^(\d+)\s*([a-z])?$/i
     if (options.searchType === "number" || numericPattern.test(query.trim())) {
       // Include recent hymns in the search
-      const allHymns = [...hymns, ...recentHymns.filter(r => !hymns.some(h => h.id === r.id))]
+      const allHymns = [...hymns, ...contextRecentHymns.filter(r => !hymns.some(h => h.id === r.id))]
       const numericResults = filterHymns(allHymns, query, options)
       setSearchResults(numericResults)
       return
@@ -99,7 +100,7 @@ export default function Home() {
     const fuseThreshold = 1 - sliderValue / 100
 
     // Include recent hymns in the search dataset
-    const allHymns = [...hymns, ...recentHymns.filter(r => !hymns.some(h => h.id === r.id))]
+    const allHymns = [...hymns, ...contextRecentHymns.filter(r => !hymns.some(h => h.id === r.id))]
 
     const fuse = new Fuse(allHymns, {
       keys,
@@ -135,6 +136,8 @@ export default function Home() {
   // Select hymn
   const handleSelectHymn = (hymn: Hymn) => {
     setSelectedHymn(hymn)
+    // We'll also add to recents here as a safety
+    addToRecent(hymn)
   }
 
   // Navigate to previous/next hymn
