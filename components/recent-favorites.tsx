@@ -12,8 +12,8 @@ export function RecentFavorites({ onSelectHymn }: RecentFavoritesProps) {
   const [recentHymns, setRecentHymns] = useState<Hymn[]>([])
   const [favorites, setFavorites] = useState<Hymn[]>([])
 
-  // Load favorites from localStorage on component mount
-  useEffect(() => {
+  // Load data from localStorage
+  const loadFromStorage = () => {
     const storedFavorites = localStorage.getItem("favorites")
     const storedRecent = localStorage.getItem("recentHymns")
 
@@ -31,6 +31,26 @@ export function RecentFavorites({ onSelectHymn }: RecentFavoritesProps) {
       } catch (e) {
         console.error("Error parsing recent hymns:", e)
       }
+    }
+  }
+
+  // Load on component mount
+  useEffect(() => {
+    loadFromStorage()
+    
+    // Listen for the custom recentHymnsUpdated event
+    window.addEventListener("recentHymnsUpdated", loadFromStorage)
+    
+    // Also set up a storage event listener to catch changes from other tabs
+    window.addEventListener("storage", loadFromStorage)
+    
+    // Check for updates every 2 seconds
+    const interval = setInterval(loadFromStorage, 2000)
+    
+    return () => {
+      window.removeEventListener("recentHymnsUpdated", loadFromStorage)
+      window.removeEventListener("storage", loadFromStorage)
+      clearInterval(interval)
     }
   }, [])
 
@@ -62,7 +82,7 @@ export function RecentFavorites({ onSelectHymn }: RecentFavoritesProps) {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500">No recent searches.</p>
+          <p className="text-sm text-gray-500">No recent hymns.</p>
         )}
       </div>
 

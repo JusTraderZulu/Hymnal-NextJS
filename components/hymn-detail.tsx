@@ -146,7 +146,23 @@ export function HymnDetail({
     // Limit to 5 recent hymns
     recentHymns = recentHymns.slice(0, 5)
 
+    // Save to localStorage
     localStorage.setItem("recentHymns", JSON.stringify(recentHymns))
+    
+    // Dispatch a custom event to notify other components
+    window.dispatchEvent(new Event("recentHymnsUpdated"))
+    
+    // Force triggering storage event for same-tab updates
+    try {
+      const storageEvent = new StorageEvent("storage", {
+        key: "recentHymns",
+        newValue: JSON.stringify(recentHymns),
+        storageArea: localStorage
+      })
+      window.dispatchEvent(storageEvent)
+    } catch (e) {
+      console.error("Error dispatching storage event:", e)
+    }
   }
 
   // Add to recent hymns when component mounts
