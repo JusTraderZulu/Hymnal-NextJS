@@ -49,12 +49,25 @@ export default function Home() {
     setSearchQuery(query)
     setSearchOptions(options)
 
+    // Get recent hymns from localStorage
+    let recentHymns: Hymn[] = []
+    try {
+      const storedRecent = localStorage.getItem("recentHymns")
+      if (storedRecent) {
+        recentHymns = JSON.parse(storedRecent)
+      }
+    } catch (e) {
+      console.error("Error parsing recent hymns:", e)
+    }
+
     // If it looks like the user is searching for a hymn number (e.g. "355" or "355a"),
     // or they explicitly selected the "number" search type, fall back to the existing
     // numeric matcher so we keep its exact-number behaviour.
     const numericPattern = /^(\d+)\s*([a-z])?$/i
     if (options.searchType === "number" || numericPattern.test(query.trim())) {
-      const numericResults = filterHymns(hymns, query, options)
+      // Include recent hymns in the search
+      const allHymns = [...hymns, ...recentHymns.filter(r => !hymns.some(h => h.id === r.id))]
+      const numericResults = filterHymns(allHymns, query, options)
       setSearchResults(numericResults)
       return
     }
@@ -85,7 +98,10 @@ export default function Home() {
     const sliderValue = options.fuzzyThreshold ?? 70
     const fuseThreshold = 1 - sliderValue / 100
 
-    const fuse = new Fuse(hymns, {
+    // Include recent hymns in the search dataset
+    const allHymns = [...hymns, ...recentHymns.filter(r => !hymns.some(h => h.id === r.id))]
+
+    const fuse = new Fuse(allHymns, {
       keys,
       includeScore: false,
       threshold: fuseThreshold,
