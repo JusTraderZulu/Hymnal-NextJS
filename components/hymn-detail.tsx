@@ -5,6 +5,7 @@ import { Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/components/ui/use-toast"
+import { useHymnContext } from "@/lib/hymn-context"
 import type { Hymn } from "@/lib/types"
 
 interface HymnDetailProps {
@@ -24,51 +25,28 @@ export function HymnDetail({
   hasNext = false,
   onSave,
 }: HymnDetailProps) {
-  const [isFavorite, setIsFavorite] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editedLyrics, setEditedLyrics] = useState(hymn.lyrics)
   const [isSaving, setIsSaving] = useState(false)
   const { toast } = useToast()
+  
+  // Use the shared hymn context
+  const { favorites, addToRecent, toggleFavorite } = useHymnContext()
+  
+  // Get favorite status from context
+  const isFavorite = favorites.some(fav => fav.id === hymn.id)
 
-  // Check if hymn is in favorites
+  // Reset edited lyrics when hymn changes
   useEffect(() => {
-    const storedFavorites = localStorage.getItem("favorites")
-    if (storedFavorites) {
-      try {
-        const favorites = JSON.parse(storedFavorites)
-        setIsFavorite(favorites.some((fav: Hymn) => fav.id === hymn.id))
-      } catch (e) {
-        console.error("Error parsing favorites:", e)
-      }
-    }
-
-    // Reset edited lyrics when hymn changes
     setEditedLyrics(hymn.lyrics)
     setIsEditing(false)
-  }, [hymn])
+    
+    // Add to recents whenever the hymn changes
+    addToRecent(hymn)
+  }, [hymn, addToRecent])
 
-  const toggleFavorite = () => {
-    const storedFavorites = localStorage.getItem("favorites")
-    let favorites: Hymn[] = []
-
-    if (storedFavorites) {
-      try {
-        favorites = JSON.parse(storedFavorites)
-      } catch (e) {
-        console.error("Error parsing favorites:", e)
-      }
-    }
-
-    if (isFavorite) {
-      // Remove from favorites
-      favorites = favorites.filter((fav: Hymn) => fav.id !== hymn.id)
-    } else {
-      // Add to favorites
-      favorites.push(hymn)
-    }
-
-    localStorage.setItem("favorites", JSON.stringify(favorites))
-    setIsFavorite(!isFavorite)
+  const handleToggleFavorite = () => {
+    toggleFavorite(hymn)
   }
 
   const toggleEditMode = () => {
@@ -125,51 +103,6 @@ export function HymnDetail({
     }
   }
 
-  const addToRecent = () => {
-    const storedRecent = localStorage.getItem("recentHymns")
-    let recentHymns: Hymn[] = []
-
-    if (storedRecent) {
-      try {
-        recentHymns = JSON.parse(storedRecent)
-      } catch (e) {
-        console.error("Error parsing recent hymns:", e)
-      }
-    }
-
-    // Remove if already exists
-    recentHymns = recentHymns.filter((recent: Hymn) => recent.id !== hymn.id)
-
-    // Add to beginning of array
-    recentHymns.unshift(hymn)
-
-    // Limit to 5 recent hymns
-    recentHymns = recentHymns.slice(0, 5)
-
-    // Save to localStorage
-    localStorage.setItem("recentHymns", JSON.stringify(recentHymns))
-    
-    // Dispatch a custom event to notify other components
-    window.dispatchEvent(new Event("recentHymnsUpdated"))
-    
-    // Force triggering storage event for same-tab updates
-    try {
-      const storageEvent = new StorageEvent("storage", {
-        key: "recentHymns",
-        newValue: JSON.stringify(recentHymns),
-        storageArea: localStorage
-      })
-      window.dispatchEvent(storageEvent)
-    } catch (e) {
-      console.error("Error dispatching storage event:", e)
-    }
-  }
-
-  // Add to recent hymns when component mounts
-  useEffect(() => {
-    addToRecent()
-  }, [hymn.id]) // eslint-disable-line react-hooks/exhaustive-deps
-
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex justify-between items-start mb-4">
@@ -181,7 +114,7 @@ export function HymnDetail({
           variant="ghost"
           size="icon"
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-          onClick={toggleFavorite}
+          onClick={handleToggleFavorite}
         >
           <Heart className={`h-5 w-5 ${isFavorite ? "fill-red-500 text-red-500" : ""}`} />
         </Button>

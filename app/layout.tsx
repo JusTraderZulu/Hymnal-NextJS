@@ -1,23 +1,22 @@
-import type React from "react"
-import "@/app/globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/toaster"
+import { Toaster } from "@/components/ui/toaster"
+import { HymnProvider } from "@/lib/hymn-context"
+import "@/app/globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Spiritual Baptist Hymnal",
   description: "A digital collection of hymns and worship songs",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -27,8 +26,10 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <main className="min-h-screen bg-gray-50">{children}</main>
-          <Toaster />
+          <HymnProvider>
+            <main className="min-h-screen bg-gray-50">{children}</main>
+            <Toaster />
+          </HymnProvider>
         </ThemeProvider>
       </body>
     </html>
