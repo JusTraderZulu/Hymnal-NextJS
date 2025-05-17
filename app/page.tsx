@@ -1,9 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-// eslint-disable-next-line import/no-namespace
 import Fuse from "fuse.js/dist/fuse.esm.js"
-import type { FuseResult, FuseOptionKeyObject } from "fuse.js"
+// Note: Fuse's namespace types are available globally; explicit import not needed
 import { SearchBar } from "@/components/search-bar"
 import { RecentFavorites } from "@/components/recent-favorites"
 import { HymnCard } from "@/components/hymn-card"
@@ -61,7 +60,7 @@ export default function Home() {
     }
 
     // Decide which hymn fields Fuse should search based on the selected search type
-    let keys: (string | FuseOptionKeyObject<Hymn>)[] = []
+    let keys: (string | any)[] = []
     switch (options.searchType) {
       case "title":
         keys = ["title"]
@@ -93,7 +92,7 @@ export default function Home() {
       ignoreLocation: true,
     })
 
-    let results = query ? fuse.search(query).map((r: FuseResult<Hymn>) => r.item) : hymns
+    let results = query ? fuse.search(query).map((r: any) => r.item) : hymns
 
     // Apply author & category filters client-side if provided
     if (options.author) {
