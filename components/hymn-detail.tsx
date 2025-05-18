@@ -104,7 +104,7 @@ export function HymnDetail({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-white rounded-lg shadow-md p-6 max-h-[80vh] overflow-auto">
       <div className="flex justify-between items-start mb-4">
         <div>
           <h1 className="text-3xl font-bold mb-2">{hymn.title}</h1>
@@ -145,7 +145,8 @@ export function HymnDetail({
           <Textarea
             value={editedLyrics}
             onChange={(e) => setEditedLyrics(e.target.value)}
-            className="min-h-[300px] font-mono"
+            className="min-h-[300px] font-mono resize-y relative z-10"
+            style={{ minHeight: 200 }}
           />
           <p className="text-sm text-gray-500 mt-2">
             Note: Format verses with "1." and chorus with "CHORUS:" to maintain structure.
