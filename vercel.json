@@ -4,8 +4,12 @@
   "buildCommand": "npm run build",
   "framework": "nextjs",
   "github": {
-    "enabled": true
+    "enabled": true,
+    "silent": true
   },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
