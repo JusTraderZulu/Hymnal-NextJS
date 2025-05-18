@@ -246,19 +246,23 @@ export default function Home() {
                 Search Results {searchQuery ? `for "${searchQuery}"` : ""}({searchResults.length}{" "}
                 {searchResults.length === 1 ? "hymn" : "hymns"})
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {searchResults.map((hymn) => (
-                  <HymnCard key={hymn.id} hymn={hymn} onClick={() => handleSelectHymn(hymn)} />
-                ))}
+              <div className="h-[70vh] overflow-y-auto pr-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {searchResults.map((hymn) => (
+                    <HymnCard key={hymn.id} hymn={hymn} onClick={() => handleSelectHymn(hymn)} />
+                  ))}
+                </div>
               </div>
             </div>
           ) : (
             <div>
-              <h2 className="text-xl font-semibold mb-4">Featured Hymns</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {hymns.slice(0, 6).map((hymn) => (
-                  <HymnCard key={hymn.id} hymn={hymn} onClick={() => handleSelectHymn(hymn)} />
-                ))}
+              <h2 className="text-xl font-semibold mb-4">All Hymns</h2>
+              <div className="h-[70vh] overflow-y-auto pr-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {hymns.map((hymn) => (
+                    <HymnCard key={hymn.id} hymn={hymn} onClick={() => handleSelectHymn(hymn)} />
+                  ))}
+                </div>
               </div>
             </div>
           )}
