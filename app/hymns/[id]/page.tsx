@@ -3,8 +3,12 @@ import { ArrowLeft, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { hymns } from "@/lib/hymns"
 
+// Helper to get current index once to use for nav buttons
+const getIndex = (id: string) => hymns.findIndex((h) => h.id === id)
+
 export default function HymnPage({ params }: { params: { id: string } }) {
   const hymn = hymns.find((h) => h.id === params.id) || hymns[0]
+  const currentIndex = getIndex(hymn.id)
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
@@ -19,14 +23,14 @@ export default function HymnPage({ params }: { params: { id: string } }) {
         <div className="flex justify-between items-start mb-4">
           <div>
             <h1 className="text-3xl font-bold mb-2">{hymn.title}</h1>
-            <p className="text-gray-500">Hymn #{hymn.number}</p>
+            <p className="text-gray-500">Hymn #{hymn.hymnNumber}</p>
           </div>
           <Button variant="ghost" size="icon" aria-label="Add to favorites">
             <Heart className="h-5 w-5" />
           </Button>
         </div>
 
-        {hymn.author && <p className="text-gray-600 mb-4">By {hymn.author}</p>}
+        {hymn.author && <p className="text-gray-600 mb-4">By {hymn.author.name}</p>}
 
         <div className="mt-6 space-y-4">
           {hymn.verses.map((verse, index) => (
@@ -46,10 +50,10 @@ export default function HymnPage({ params }: { params: { id: string } }) {
       </div>
 
       <div className="flex justify-between">
-        <Button variant="outline" disabled={hymn.number <= 1}>
+        <Button variant="outline" disabled={currentIndex <= 0}>
           Previous Hymn
         </Button>
-        <Button variant="outline" disabled={hymn.number >= hymns.length}>
+        <Button variant="outline" disabled={currentIndex >= hymns.length - 1}>
           Next Hymn
         </Button>
       </div>
